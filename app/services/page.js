@@ -14,7 +14,9 @@ export default function BrowseServices() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/services')
+   // fetch('http://localhost:5000/api/services')
+ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+fetch(`${apiUrl}/api/services`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success) {

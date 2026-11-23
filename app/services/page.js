@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { apiFetch } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 
 export default function BrowseServices() {
   const [services, setServices] = useState([]);
@@ -15,14 +15,10 @@ export default function BrowseServices() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiFetch('/api/services')
-      .then((res) => res.json())
+    apiJson('/api/services')
       .then((res) => {
-        if (res.success) {
-          setServices(res.data);
-          setFilteredServices(res.data);
-        }
-        setLoading(false);
+        setServices(res.data);
+        setFilteredServices(res.data);
       })
       .catch((err) => {
         console.error("Error fetching services:", err);

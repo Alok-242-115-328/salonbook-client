@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { apiFetch, apiJson } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 
 export default function EditService() {
   const router = useRouter();
@@ -51,14 +51,12 @@ export default function EditService() {
       if (file) {
         const imageFormData = new FormData();
         imageFormData.append("image", file);
-        const imgRes = await apiFetch('/api/upload', { method: 'POST', body: imageFormData });
-        const imgData = await imgRes.json();
-        if (!imgRes.ok) throw new Error("Image upload failed");
+        const imgData = await apiJson('/api/upload', { method: 'POST', body: imageFormData });
         imageUrl = imgData.url;
         toast.success('Image uploaded successfully!'); 
       }
 
-      const res = await apiFetch(`/api/admin/services/${serviceId}`, {
+      await apiJson(`/api/admin/services/${serviceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -67,13 +65,8 @@ export default function EditService() {
         body: JSON.stringify({ ...formData, image: imageUrl })
       });
 
-      const data = await res.json();
-      if (data.success) {
-        toast.success('Service updated successfully!');
-        router.push('/dashboard/admin/manage-services');
-      } else {
-        toast.error(data.message || 'Failed to update');
-      }
+      toast.success('Service updated successfully!');
+      router.push('/dashboard/admin/manage-services');
     } catch (error) {
       toast.error(error.message);
     } finally {

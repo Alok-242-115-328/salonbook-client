@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
-import { apiFetch } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 import { 
   LayoutDashboard, 
@@ -12,7 +12,9 @@ import {
   CalendarCheck, 
   Users, 
   CreditCard, 
-  UserCircle 
+  UserCircle,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function DashboardLayout({ children }) {
@@ -20,6 +22,7 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isBlocked, setIsBlocked] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // সার্ভার থেকে ব্লক স্ট্যাটাস চেক করা
   useEffect(() => {
@@ -44,12 +47,9 @@ export default function DashboardLayout({ children }) {
       if (!session.user.email) return;
 
       try {
-        const res = await apiFetch('/api/user/status', {
+        const data = await apiJson('/api/user/status', {
           headers: { 'Authorization': `Bearer ${session.user.email}` }
         });
-        if (!res.ok) return;
-
-        const data = await res.json();
 
         if (data.isBlocked) {
           setIsBlocked(true);
@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     // 👇 মেইন লেআউট ব্যাকগ্রাউন্ড ডার্ক করা হলো
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
       {/* 👇 Sidebar ডার্ক করা হলো */}
       <aside className="w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 hidden md:block transition-colors duration-300">
@@ -120,8 +120,47 @@ export default function DashboardLayout({ children }) {
         </nav>
       </aside>
 
+      <div className="md:hidden flex-1">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            aria-label="Toggle navigation"
+          >
+            {mobileNavOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+          <span className="font-bold text-pink-600 dark:text-pink-400">SalonBook {isAdmin ? 'Admin' : 'Customer'}</span>
+          <span className="w-10" />
+        </div>
+
+        {mobileNavOpen && (
+          <nav className="p-4 space-y-2 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+            {links.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                    isActive
+                      ? 'bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 font-semibold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+      </div>
+
       {/* 👇 Main Content */}
-      <main className="flex-1 p-8 transition-colors duration-300">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
         {children}
       </main>
     </div>

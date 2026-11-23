@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { apiFetch } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 
 export default function ManageAppointments() {
   const { data: session } = authClient.useSession();
@@ -16,11 +16,10 @@ export default function ManageAppointments() {
   const fetchAppointments = async () => {
     try {
       if (!session?.user?.email) return;
-      const res = await apiFetch('/api/admin/appointments', {
+      const data = await apiJson('/api/admin/appointments', {
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       });
-      const data = await res.json();
-      if (data.success) setAppointments(data.data);
+      setAppointments(data.data);
     } catch (error) {
       toast.error('Failed to load appointments');
     } finally {
@@ -31,12 +30,15 @@ export default function ManageAppointments() {
   useEffect(() => { if (session) fetchAppointments(); }, [session]);
 
   const handleConfirm = async (id) => {
-    const res = await apiFetch(`/api/admin/appointments/${id}/confirm`, {
-      method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
-    });
-    const data = await res.json();
-    if (data.success) { toast.success('Confirmed'); fetchAppointments(); } 
-    else { toast.error(data.message); }
+    try {
+      await apiJson(`/api/admin/appointments/${id}/confirm`, {
+        method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
+      });
+      toast.success('Confirmed');
+      fetchAppointments();
+    } catch (err) {
+      toast.error(err.message || 'Action failed');
+    }
   };
 
   // 👇 ক্যান্সেল বাটনে ক্লিক করলে ব্রাউজার পপআপের বদলে আমাদের কাস্টম মডাল ওপেন হবে
@@ -49,12 +51,15 @@ export default function ManageAppointments() {
     const id = cancelModal.appointmentId;
     setCancelModal({ isOpen: false, appointmentId: null }); // মডাল বন্ধ করা হলো
     
-    const res = await apiFetch(`/api/admin/appointments/${id}/cancel`, {
-      method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
-    });
-    const data = await res.json();
-    if (data.success) { toast.success('Cancelled'); fetchAppointments(); } 
-    else { toast.error(data.message); }
+    try {
+      await apiJson(`/api/admin/appointments/${id}/cancel`, {
+        method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
+      });
+      toast.success('Cancelled');
+      fetchAppointments();
+    } catch (err) {
+      toast.error(err.message || 'Action failed');
+    }
   };
 
   const filteredAppointments = filter === 'all' ? appointments : appointments.filter(app => app.status === filter);

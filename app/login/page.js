@@ -45,10 +45,19 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/dashboard/customer",
-    });
+    setLoading(true);
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/dashboard/customer`,
+        errorCallbackURL: `${window.location.origin}/login`,
+      });
+      if (error) toast.error(error.message || "Google sign-in failed");
+    } catch (err) {
+      toast.error(err?.message || "Google sign-in failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {

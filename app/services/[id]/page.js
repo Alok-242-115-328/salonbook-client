@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
-import { apiFetch, apiJson } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 
 export default function ServiceDetails() {
@@ -44,7 +44,7 @@ export default function ServiceDetails() {
 
     setBookingLoading(true);
     try {
-      const res = await apiFetch('/api/customer/appointments', {
+      await apiJson('/api/customer/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,14 +53,8 @@ export default function ServiceDetails() {
         body: JSON.stringify({ serviceId, appointmentDate, timeSlot, message }),
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success('Appointment requested successfully!');
-        router.push('/dashboard/customer');
-      } else {
-        toast.error(data.message || 'Failed to book appointment');
-      }
+      toast.success('Appointment requested successfully!');
+      router.push('/dashboard/customer');
     } catch (error) {
       toast.error('Something went wrong');
     } finally {

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { apiFetch } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 
 export default function AddService() {
   const router = useRouter();
@@ -49,18 +49,15 @@ export default function AddService() {
       const imageFormData = new FormData();
       imageFormData.append("image", file);
 
-      const imgRes = await apiFetch('/api/upload', {
+      const imgData = await apiJson('/api/upload', {
         method: 'POST',
         body: imageFormData,
       });
-      
-      const imgData = await imgRes.json();
-      if (!imgRes.ok) throw new Error(imgData.error || "Image upload failed");
 
       const imageUrl = imgData.url;
 
       // ২. সার্ভারে ডাটা পাঠানো
-      const res = await apiFetch('/api/admin/services', {
+      await apiJson('/api/admin/services', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,14 +71,8 @@ export default function AddService() {
         }),
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success('Service added successfully!');
-        router.push('/dashboard/admin/manage-services');
-      } else {
-        toast.error(data.message || 'Failed to add service.');
-      }
+      toast.success('Service added successfully!');
+      router.push('/dashboard/admin/manage-services');
     } catch (error) {
       console.error(error);
       toast.error(error.message || 'Something went wrong!');

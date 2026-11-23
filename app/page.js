@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api";
+import { apiJson } from "@/lib/api";
 
 export default function Home() {
   const [services, setServices] = useState([]);
@@ -17,14 +17,8 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    apiFetch('/api/services')
-      .then((res) => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
-      .then((res) => {
-        if (res.success) setServices(res.data.slice(0, 6));
-      })
+    apiJson('/api/services')
+      .then((res) => setServices(res.data.slice(0, 6)))
       .catch((err) => console.error("Error fetching services:", err));
   }, []);
 

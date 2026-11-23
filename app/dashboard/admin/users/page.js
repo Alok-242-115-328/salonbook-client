@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { apiFetch } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 
 export default function ManageUsers() {
   const { data: session } = authClient.useSession();
@@ -11,11 +11,10 @@ export default function ManageUsers() {
 
   const fetchUsers = async () => {
     try {
-      const res = await apiFetch('/api/admin/users', {
+      const data = await apiJson('/api/admin/users', {
         headers: { 'Authorization': `Bearer ${session?.user?.email}` }
       });
-      const data = await res.json();
-      if (data.success) setUsers(data.data);
+      setUsers(data.data);
     } catch (error) {
       toast.error('Failed to load users');
     } finally {
@@ -26,11 +25,15 @@ export default function ManageUsers() {
   useEffect(() => { if (session) fetchUsers(); }, [session]);
 
   const toggleBlock = async (id) => {
-    const res = await apiFetch(`/api/admin/users/${id}/toggle-block`, {
-      method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
-    });
-    const data = await res.json();
-    if (data.success) { toast.success('Status updated'); fetchUsers(); }
+    try {
+      await apiJson(`/api/admin/users/${id}/toggle-block`, {
+        method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
+      });
+      toast.success('Status updated');
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.message || 'Action failed');
+    }
   };
 
   if (loading) return <div className="p-8 text-gray-900 dark:text-white">Loading users...</div>;

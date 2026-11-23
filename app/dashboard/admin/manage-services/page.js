@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { apiFetch } from '@/lib/api';
+import { apiJson } from '@/lib/api';
 
 export default function ManageServices() {
   const { data: session } = authClient.useSession();
@@ -18,14 +18,10 @@ export default function ManageServices() {
     try {
       if (!session?.user?.email) return;
       
-      const res = await apiFetch('/api/admin/services', {
+      const data = await apiJson('/api/admin/services', {
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       });
-      const data = await res.json();
-      
-      if (data.success) {
-        setServices(data.data);
-      }
+      setServices(data.data);
     } catch (error) {
       toast.error('Failed to load services');
     } finally {
@@ -48,16 +44,12 @@ export default function ManageServices() {
     setDeleteModal({ isOpen: false, serviceId: null }); // মডাল বন্ধ করা হলো
 
     try {
-      const res = await apiFetch(`/api/admin/services/${id}`, {
+      await apiJson(`/api/admin/services/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       });
-      if (res.ok) {
-        toast.success('Service deleted successfully');
-        fetchServices(); // লিস্ট রিফ্রেশ করা
-      } else {
-        toast.error('Failed to delete service');
-      }
+      toast.success('Service deleted successfully');
+      fetchServices();
     } catch (error) {
       toast.error('An error occurred');
     }

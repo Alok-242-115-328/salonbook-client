@@ -1,17 +1,28 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { apiJson } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function PaymentSuccess() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() =>
+    typeof window !== 'undefined' && Boolean(new URLSearchParams(window.location.search).get('session_id'))
+  );
+  const router = useRouter();
 
   useEffect(() => {
-    // Webhook ডাটাবেস আপডেট করার জন্য ২ সেকেন্ড অপেক্ষা করা হচ্ছে
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    const appointmentId = params.get('appointment_id');
+
+    if (!sessionId) return;
+
+    apiJson(`/api/payment/status?session_id=${encodeURIComponent(sessionId)}&appointment_id=${encodeURIComponent(appointmentId || '')}`)
+      .then(() => router.refresh())
+      .catch(err => toast.error(err.message || 'Payment confirmation failed'))
+      .finally(() => setLoading(false));
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

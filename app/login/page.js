@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
+import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react'; // 👈 আইকন ইমপোর্ট
 
@@ -47,12 +48,17 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const { error } = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: `${window.location.origin}/dashboard/customer`,
-        errorCallbackURL: `${window.location.origin}/login`,
+      const data = await apiJson('/api/auth/sign-in/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'google',
+          callbackURL: `${window.location.origin}/dashboard/customer`,
+          errorCallbackURL: `${window.location.origin}/login`,
+        }),
       });
-      if (error) toast.error(error.message || "Google sign-in failed");
+      if (!data.url) throw new Error('Google sign-in failed');
+      window.location.href = data.url;
     } catch (err) {
       toast.error(err?.message || "Google sign-in failed");
     } finally {

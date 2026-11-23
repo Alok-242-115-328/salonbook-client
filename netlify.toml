@@ -3,3 +3,9 @@
   to = "https://salonbook-server-vz28.onrender.com/:splat"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/auth/*"
+  to = "https://salonbook-server-vz28.onrender.com/api/auth/:splat"
+  status = 200
+  force = true

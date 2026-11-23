@@ -26,22 +26,25 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    const { data, error } = await authClient.signUp.email({
-      email: formData.email,
-      password: formData.password,
-      name: formData.name,
-      image: formData.image || "https://i.ibb.co/default-avatar.png",
-    });
+    try {
+      const { data, error } = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        image: formData.image || "https://i.ibb.co/default-avatar.png",
+      });
 
-    if (error) {
-      console.log("FULL AUTH ERROR OBJECT:", error); 
-      toast.error(error.message || "Unsuccessful to register");
-    } 
-    else {
-      toast.success("Account created successfully! Please login.");
-      router.push('/login');
+      if (error) {
+        toast.error(error.message || "Unsuccessful to register");
+      } else {
+        toast.success("Account created successfully! Please login.");
+        router.push('/login');
+      }
+    } catch (err) {
+      toast.error(err?.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // গুগল লগইন ফাংশন

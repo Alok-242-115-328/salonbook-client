@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
+import { apiFetch, apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 
 export default function ServiceDetails() {
@@ -18,15 +19,14 @@ export default function ServiceDetails() {
   const [message, setMessage] = useState('');
 
   // সার্ভিস ডিটেইলস লোড
+  const serviceId = Array.isArray(id) ? id[0] : id;
+
   useEffect(() => {
-    fetch(`http://localhost:5000/api/services/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setService(data.data);
-      })
-      .catch(() => toast.error('Failed to load service'))
+    apiJson(`/api/services/${serviceId}`)
+      .then(data => setService(data.data))
+      .catch(err => toast.error(err.message || 'Failed to load service'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [serviceId]);
 
   // বুকিং সাবমিট
   const handleBooking = async (e) => {
@@ -37,15 +37,20 @@ export default function ServiceDetails() {
       return;
     }
 
+    if (session.user.role === 'admin') {
+      toast.error('Admins cannot book appointments');
+      return;
+    }
+
     setBookingLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/customer/appointments', {
+      const res = await apiFetch('/api/customer/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.user.email}`
         },
-        body: JSON.stringify({ serviceId: id, appointmentDate, timeSlot, message }),
+        body: JSON.stringify({ serviceId, appointmentDate, timeSlot, message }),
       });
 
       const data = await res.json();

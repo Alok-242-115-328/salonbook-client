@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api";
 
 export default function Home() {
   const [services, setServices] = useState([]);
@@ -16,12 +17,7 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    //fetch('http://localhost:5000/api/services')
-    
-// 👇 এই লাইনটা যোগ করো (যাতে Netlify-তে .env থেকে লিংকটা নেয়)
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-    fetch(`${apiUrl}/api/services`)
+    apiFetch('/api/services')
       .then((res) => {
         if (!res.ok) throw new Error('Network response was not ok');
         return res.json();

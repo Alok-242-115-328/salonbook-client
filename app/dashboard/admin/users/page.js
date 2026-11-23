@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import { apiFetch } from '@/lib/api';
 
 export default function ManageUsers() {
   const { data: session } = authClient.useSession();
@@ -10,7 +11,7 @@ export default function ManageUsers() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users', {
+      const res = await apiFetch('/api/admin/users', {
         headers: { 'Authorization': `Bearer ${session?.user?.email}` }
       });
       const data = await res.json();
@@ -25,7 +26,7 @@ export default function ManageUsers() {
   useEffect(() => { if (session) fetchUsers(); }, [session]);
 
   const toggleBlock = async (id) => {
-    const res = await fetch(`http://localhost:5000/api/admin/users/${id}/toggle-block`, {
+    const res = await apiFetch(`/api/admin/users/${id}/toggle-block`, {
       method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
     });
     const data = await res.json();

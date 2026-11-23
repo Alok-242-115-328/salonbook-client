@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
+import { apiFetch } from '@/lib/api';
 import { toast } from 'sonner';
 import { 
   LayoutDashboard, 
@@ -22,30 +23,47 @@ export default function DashboardLayout({ children }) {
 
   // সার্ভার থেকে ব্লক স্ট্যাটাস চেক করা
   useEffect(() => {
+    if (isPending) return;
+
+    if (!session) {
+      router.replace('/login');
+      return;
+    }
+
+    if (pathname.startsWith('/dashboard/admin') && session.user.role !== 'admin') {
+      router.replace('/dashboard/customer');
+      return;
+    }
+
+    if (pathname.startsWith('/dashboard/customer') && session.user.role === 'admin') {
+      router.replace('/dashboard/admin');
+      return;
+    }
+
     const checkBlockStatus = async () => {
-      if (session?.user?.email) {
-        try {
-          const res = await fetch('http://localhost:5000/api/user/status', {
-            headers: { 'Authorization': `Bearer ${session.user.email}` }
-          });
-          const data = await res.json();
-          
-          if (data.isBlocked) {
-            setIsBlocked(true);
-            toast.error("Your account has been blocked by the admin!");
-            await authClient.signOut();
-            router.push('/login');
-          }
-        } catch (error) {
-          console.error("Error checking block status:", error);
+      if (!session.user.email) return;
+
+      try {
+        const res = await apiFetch('/api/user/status', {
+          headers: { 'Authorization': `Bearer ${session.user.email}` }
+        });
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        if (data.isBlocked) {
+          setIsBlocked(true);
+          toast.error("Your account has been blocked by the admin!");
+          await authClient.signOut();
+          router.replace('/login');
         }
-      } else if (!isPending && !session) {
-        router.push('/login');
+      } catch (error) {
+        console.error("Error checking block status:", error);
       }
     };
 
     checkBlockStatus();
-  }, [session, isPending, router]);
+  }, [session, isPending, pathname, router]);
 
   if (isPending) return <div className="p-8 text-center text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 min-h-screen">Loading...</div>;
   

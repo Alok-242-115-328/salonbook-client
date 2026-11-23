@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { apiFetch } from '@/lib/api';
 
 export default function BrowseServices() {
   const [services, setServices] = useState([]);
@@ -14,9 +15,7 @@ export default function BrowseServices() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-   // fetch('http://localhost:5000/api/services')
- const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-fetch(`${apiUrl}/api/services`)
+    apiFetch('/api/services')
       .then((res) => res.json())
       .then((res) => {
         if (res.success) {

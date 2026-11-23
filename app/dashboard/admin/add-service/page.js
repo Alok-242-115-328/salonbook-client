@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import { apiFetch } from '@/lib/api';
 
 export default function AddService() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function AddService() {
       const imageFormData = new FormData();
       imageFormData.append("image", file);
 
-      const imgRes = await fetch('/api/upload', {
+      const imgRes = await apiFetch('/api/upload', {
         method: 'POST',
         body: imageFormData,
       });
@@ -59,7 +60,7 @@ export default function AddService() {
       const imageUrl = imgData.url;
 
       // ২. সার্ভারে ডাটা পাঠানো
-      const res = await fetch('http://localhost:5000/api/admin/services', {
+      const res = await apiFetch('/api/admin/services', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

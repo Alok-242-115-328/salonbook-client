@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { authClient } from '@/lib/auth-client';
+import { apiJson } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function Transactions() {
   const { data: session } = authClient.useSession();
@@ -9,13 +11,11 @@ export default function Transactions() {
 
   useEffect(() => {
     if (session) {
-      fetch('http://localhost:5000/api/admin/transactions', {
+      apiJson('/api/admin/transactions', {
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) setTransactions(data.data);
-        })
+        .then(data => setTransactions(data.data))
+        .catch(err => toast.error(err.message || 'Failed to load transactions'))
         .finally(() => setLoading(false));
     }
   }, [session]);

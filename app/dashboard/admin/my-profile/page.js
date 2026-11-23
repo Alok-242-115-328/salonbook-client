@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import { apiJson } from '@/lib/api';
 
 export default function MyProfile() {
   const { data: session, refetch } = authClient.useSession();
@@ -23,7 +24,7 @@ export default function MyProfile() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/profile', {
+      await apiJson('/api/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -32,14 +33,8 @@ export default function MyProfile() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success('Profile updated successfully!');
-        if (refetch) refetch(); 
-      } else {
-        toast.error(data.message || 'Failed to update profile');
-      }
+      toast.success('Profile updated successfully!');
+      if (refetch) refetch();
     } catch (error) {
       console.error(error);
       toast.error('Something went wrong');

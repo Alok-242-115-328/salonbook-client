@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import { apiFetch } from '@/lib/api';
 
 export default function ManageServices() {
   const { data: session } = authClient.useSession();
@@ -17,7 +18,7 @@ export default function ManageServices() {
     try {
       if (!session?.user?.email) return;
       
-      const res = await fetch('http://localhost:5000/api/admin/services', {
+      const res = await apiFetch('/api/admin/services', {
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       });
       const data = await res.json();
@@ -47,7 +48,7 @@ export default function ManageServices() {
     setDeleteModal({ isOpen: false, serviceId: null }); // মডাল বন্ধ করা হলো
 
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/services/${id}`, {
+      const res = await apiFetch(`/api/admin/services/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       });

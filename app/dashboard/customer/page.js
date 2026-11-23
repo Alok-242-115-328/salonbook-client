@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { authClient } from '@/lib/auth-client';
+import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -12,11 +13,10 @@ export default function CustomerDashboard() {
   const fetchAppointments = async () => {
     if (session?.user?.email) {
       try {
-        const res = await fetch('http://localhost:5000/api/customer/appointments', {
+        const data = await apiJson('/api/customer/appointments', {
           headers: { 'Authorization': `Bearer ${session.user.email}` }
         });
-        const data = await res.json();
-        if (data.success) setAppointments(data.data);
+        setAppointments(data.data);
       } catch (error) {
         toast.error('Failed to load appointments');
       } finally {
@@ -32,7 +32,7 @@ export default function CustomerDashboard() {
   // ১. পেমেন্ট হ্যান্ডেল করার ফাংশন
   const handlePayment = async (appointmentId) => {
     try {
-      const res = await fetch('http://localhost:5000/api/payment/create-checkout-session', {
+      const data = await apiJson('/api/payment/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,13 +41,7 @@ export default function CustomerDashboard() {
         body: JSON.stringify({ appointmentId })
       });
 
-      const data = await res.json();
-      
-      if (data.success && data.url) {
-        window.location.href = data.url; // Stripe চেকআউট পেজে রিডাইরেক্ট
-      } else {
-        toast.error(data.message || 'Failed to start payment');
-      }
+      window.location.href = data.url;
     } catch (error) {
       console.error(error);
       toast.error('Something went wrong');
@@ -58,17 +52,12 @@ export default function CustomerDashboard() {
   const handleCancel = async (id) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/customer/appointments/${id}/cancel`, {
+      await apiJson(`/api/customer/appointments/${id}/cancel`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       });
-      const data = await res.json();
-      if (data.success) {
-        toast.success('Appointment cancelled');
-        fetchAppointments(); // রিফ্রেশ
-      } else {
-        toast.error(data.message);
-      }
+      toast.success('Appointment cancelled');
+      fetchAppointments();
     } catch (error) {
       toast.error('Failed to cancel');
     }

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import { apiFetch, apiJson } from '@/lib/api';
 
 export default function EditService() {
   const router = useRouter();
@@ -16,15 +17,14 @@ export default function EditService() {
     serviceName: '', category: '', description: '', price: '', duration: '', image: '', status: 'active'
   });
 
+  const serviceId = Array.isArray(id) ? id[0] : id;
+
   useEffect(() => {
-    fetch(`http://localhost:5000/api/services/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setFormData(data.data);
-      })
-      .catch(() => toast.error('Failed to load service'))
+    apiJson(`/api/services/${serviceId}`)
+      .then(data => setFormData(data.data))
+      .catch(err => toast.error(err.message || 'Failed to load service'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [serviceId]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,14 +51,14 @@ export default function EditService() {
       if (file) {
         const imageFormData = new FormData();
         imageFormData.append("image", file);
-        const imgRes = await fetch('/api/upload', { method: 'POST', body: imageFormData });
+        const imgRes = await apiFetch('/api/upload', { method: 'POST', body: imageFormData });
         const imgData = await imgRes.json();
         if (!imgRes.ok) throw new Error("Image upload failed");
         imageUrl = imgData.url;
         toast.success('Image uploaded successfully!'); 
       }
 
-      const res = await fetch(`http://localhost:5000/api/admin/services/${id}`, {
+      const res = await apiFetch(`/api/admin/services/${serviceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

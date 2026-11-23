@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import { apiFetch } from '@/lib/api';
 
 export default function ManageAppointments() {
   const { data: session } = authClient.useSession();
@@ -15,7 +16,7 @@ export default function ManageAppointments() {
   const fetchAppointments = async () => {
     try {
       if (!session?.user?.email) return;
-      const res = await fetch('http://localhost:5000/api/admin/appointments', {
+      const res = await apiFetch('/api/admin/appointments', {
         headers: { 'Authorization': `Bearer ${session.user.email}` }
       });
       const data = await res.json();
@@ -30,7 +31,7 @@ export default function ManageAppointments() {
   useEffect(() => { if (session) fetchAppointments(); }, [session]);
 
   const handleConfirm = async (id) => {
-    const res = await fetch(`http://localhost:5000/api/admin/appointments/${id}/confirm`, {
+    const res = await apiFetch(`/api/admin/appointments/${id}/confirm`, {
       method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
     });
     const data = await res.json();
@@ -48,7 +49,7 @@ export default function ManageAppointments() {
     const id = cancelModal.appointmentId;
     setCancelModal({ isOpen: false, appointmentId: null }); // মডাল বন্ধ করা হলো
     
-    const res = await fetch(`http://localhost:5000/api/admin/appointments/${id}/cancel`, {
+    const res = await apiFetch(`/api/admin/appointments/${id}/cancel`, {
       method: 'PATCH', headers: { 'Authorization': `Bearer ${session.user.email}` }
     });
     const data = await res.json();

@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { authClient } from '@/lib/auth-client';
+import { apiJson } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function AdminOverview() {
   const { data: session } = authClient.useSession();
@@ -12,24 +14,14 @@ export default function AdminOverview() {
       try {
         if (!session?.user?.email) return;
 
-        const email = session.user.email;
-        console.log("ক্লায়েন্ট থেকে পাঠানো হচ্ছে:", email);
-
-        const res = await fetch('http://localhost:5000/api/admin/overview', {
+        const data = await apiJson('/api/admin/overview', {
           headers: {
-            'Authorization': `Bearer ${email}`
+            'Authorization': `Bearer ${session.user.email}`
           }
         });
-        
-        const data = await res.json();
-        
-        if (data.success) {
-          setStats(data.data);
-        } else {
-          console.error("সার্ভার থেকে এরর:", data.message);
-        }
+        setStats(data.data);
       } catch (err) {
-        console.error("Fetch Error:", err);
+        toast.error(err.message || 'Failed to load dashboard stats');
       } finally {
         setLoading(false);
       }

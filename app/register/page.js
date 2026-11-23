@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
+import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {
@@ -25,34 +25,51 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const { data, error } = await authClient.signUp.email({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        image: formData.image || "https://i.ibb.co/default-avatar.png",
+      await apiJson('/api/auth/sign-up/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          image: formData.image || "https://i.ibb.co/default-avatar.png",
+        }),
       });
-
-      if (error) {
-        toast.error(error.message || "Unsuccessful to register");
-      } else {
-        toast.success("Account created successfully! Please login.");
-        router.push('/login');
-      }
+      toast.success("Account created successfully! Please login.");
+      router.push('/login');
     } catch (err) {
-      toast.error(err?.message || "Something went wrong. Please try again.");
+      toast.error(err?.name === 'AbortError' ? 'Request timed out. Please try again.' : err?.message || "Something went wrong. Please try again.");
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
 
   // গুগল লগইন ফাংশন
   const handleGoogleLogin = async () => {
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/dashboard/customer", 
-    });
+    setLoading(true);
+    try {
+      const data = await apiJson('/api/auth/sign-in/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'google',
+          callbackURL: `${window.location.origin}/dashboard/customer`,
+          errorCallbackURL: `${window.location.origin}/login`,
+        }),
+      });
+      if (!data.url) throw new Error('Google sign-in failed');
+      window.location.href = data.url;
+    } catch (err) {
+      toast.error(err?.message || "Google sign-in failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {

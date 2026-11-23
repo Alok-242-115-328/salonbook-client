@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { apiJson } from '@/lib/api';
+import { apiJson, apiUpload } from '@/lib/api';
 
 export default function AddService() {
   const router = useRouter();
@@ -49,11 +49,7 @@ export default function AddService() {
       const imageFormData = new FormData();
       imageFormData.append("image", file);
 
-      const imgData = await apiJson('/api/upload', {
-        method: 'POST',
-        body: imageFormData,
-      });
-
+      const imgData = await apiUpload(imageFormData);
       const imageUrl = imgData.url;
 
       // ২. সার্ভারে ডাটা পাঠানো

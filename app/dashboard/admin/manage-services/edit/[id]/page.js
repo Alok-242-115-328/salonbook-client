@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { apiJson } from '@/lib/api';
+import { apiJson, apiUpload } from '@/lib/api';
 
 export default function EditService() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function EditService() {
       if (file) {
         const imageFormData = new FormData();
         imageFormData.append("image", file);
-        const imgData = await apiJson('/api/upload', { method: 'POST', body: imageFormData });
+        const imgData = await apiUpload(imageFormData);
         imageUrl = imgData.url;
         toast.success('Image uploaded successfully!'); 
       }

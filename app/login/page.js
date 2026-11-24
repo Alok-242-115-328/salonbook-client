@@ -1,13 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react'; // 👈 আইকন ইমপোর্ট
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // 👈 পাসওয়ার্ড দেখার স্টেট
   const [formData, setFormData] = useState({
@@ -29,8 +27,7 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
       toast.success("Logged in successfully!");
-      router.push(data?.user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer');
-      router.refresh();
+      window.location.replace(data?.user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer');
     } catch (err) {
       toast.error(err?.name === 'AbortError' ? 'Request timed out. Please try again.' : err?.message || "Invalid email or password");
     } finally {
@@ -47,8 +44,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: 'google',
-          callbackURL: `${window.location.origin}/dashboard/customer`,
-          errorCallbackURL: `${window.location.origin}/login`,
+          callbackURL: '/dashboard/customer',
+          errorCallbackURL: '/login',
         }),
       });
       if (!data.url) throw new Error('Google sign-in failed');

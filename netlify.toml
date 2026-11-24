@@ -1,4 +1,10 @@
 [[redirects]]
+  from = "/api/*"
+  to = "https://salonbook-server-vz28.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/server-api/*"
   to = "https://salonbook-server-vz28.onrender.com/:splat"
   status = 200

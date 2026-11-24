@@ -59,8 +59,8 @@ export default function RegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: 'google',
-          callbackURL: `${window.location.origin}/dashboard/customer`,
-          errorCallbackURL: `${window.location.origin}/login`,
+          callbackURL: '/dashboard/customer',
+          errorCallbackURL: '/login',
         }),
       });
       if (!data.url) throw new Error('Google sign-in failed');

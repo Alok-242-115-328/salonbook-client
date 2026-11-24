@@ -20,14 +20,14 @@ export default function LoginPage() {
     const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const data = await apiJson('/api/auth/sign-in/email', {
+      await apiJson('/api/auth/sign-in/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify(formData),
       });
       toast.success("Logged in successfully!");
-      window.location.replace(data?.user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer');
+      window.location.replace('/dashboard/customer');
     } catch (err) {
       toast.error(err?.name === 'AbortError' ? 'Request timed out. Please try again.' : err?.message || "Invalid email or password");
     } finally {

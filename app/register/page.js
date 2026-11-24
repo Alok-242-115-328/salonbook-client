@@ -1,12 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -41,7 +39,7 @@ export default function RegisterPage() {
         }),
       });
       toast.success("Account created successfully! Please login.");
-      router.push('/login');
+      window.location.replace('/login');
     } catch (err) {
       toast.error(err?.name === 'AbortError' ? 'Request timed out. Please try again.' : err?.message || "Something went wrong. Please try again.");
     } finally {

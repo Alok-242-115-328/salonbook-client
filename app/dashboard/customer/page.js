@@ -22,6 +22,8 @@ export default function CustomerDashboard() {
       } finally {
         setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
   };
 

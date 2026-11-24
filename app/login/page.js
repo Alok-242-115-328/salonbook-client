@@ -44,8 +44,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: 'google',
-          callbackURL: '/dashboard/customer',
-          errorCallbackURL: '/login',
+          callbackURL: `${window.location.origin}/dashboard/customer`,
+          errorCallbackURL: `${window.location.origin}/login`,
         }),
       });
       if (!data.url) throw new Error('Google sign-in failed');

@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authClient } from '@/lib/auth-client';
 import { apiJson } from '@/lib/api';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react'; // 👈 আইকন ইমপোর্ট
@@ -19,28 +18,23 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const { data, error } = await authClient.signIn.email({
-        email: formData.email,
-        password: formData.password,
+      const data = await apiJson('/api/auth/sign-in/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify(formData),
       });
-
-      if (error) {
-        toast.error(error.message || "Invalid email or password");
-      } else {
-        toast.success("Logged in successfully!");
-        
-        if (data?.user?.role === 'admin') {
-          router.push('/dashboard/admin');
-        } else {
-          router.push('/dashboard/customer');
-        }
-        router.refresh();
-      }
+      toast.success("Logged in successfully!");
+      router.push(data?.user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/customer');
+      router.refresh();
     } catch (err) {
-      toast.error(err?.message || "Something went wrong. Please try again.");
+      toast.error(err?.name === 'AbortError' ? 'Request timed out. Please try again.' : err?.message || "Invalid email or password");
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
